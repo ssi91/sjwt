@@ -43,7 +43,26 @@ func TestJWT_GenerateToken(t *testing.T) {
 		Name: "John Doe",
 	}
 	jwt := NewJWT(header, payload, "your-256-bit-secret")
-	token, err := jwt.GenerateToken()
+	token, err := jwt.GenerateToken(false)
+	if err != nil {
+		t.Errorf("Failed with error: %s", err)
+	}
+	if token != expectedStr {
+		t.Errorf("Token string does not match to expected:\nExpected: %s\nActual: %s\n", expectedStr, token)
+	}
+}
+
+func TestJWT_GenerateToken_encode(t *testing.T) {
+	expectedStr := "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJuYW1lIjoiSm9obiBEb2UifQ.78M_nOAoLTZVDh1PM6tzk3mxIrcuaSKMw5PhwIVuAKU"
+	header := Header{
+		Alg:  "HS256",
+		Type: "JWT",
+	}
+	payload := Payload{
+		Name: "John Doe",
+	}
+	jwt := NewJWT(header, payload, "your-256-bit-secret")
+	token, err := jwt.GenerateToken(true)
 	if err != nil {
 		t.Errorf("Failed with error: %s", err)
 	}

@@ -56,8 +56,15 @@ func (j JWT) stringifyPayload(encode bool) (string, error) {
 	return j.payload.stringify(encode)
 }
 
-func (j JWT) GenerateToken() (string, error) {
+func (j JWT) GenerateToken(encode bool) (string, error) {
 	key := []byte(j.secret) // TODO: encode secret according to `encode` parameter
+	if encode {
+		encodedKey, err := base64.RawURLEncoding.DecodeString(j.secret)
+		if err != nil {
+			return "", err
+		}
+		key = encodedKey
+	}
 	mac := hmac.New(sha256.New, key)
 
 	payloadStr, err := j.stringifyPayload(false)
@@ -112,7 +119,7 @@ func (j JWT) ValidateToken(token string, login string) bool {
 	}
 
 	// check signature
-	gToken, err := j.GenerateToken()
+	gToken, err := j.GenerateToken(false)
 	if err != nil {
 		return false
 	}
