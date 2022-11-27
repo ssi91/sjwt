@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"strings"
 )
 
 type Header struct {
@@ -75,4 +76,45 @@ func (j JWT) GenerateToken() (string, error) {
 	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 	token := dataToSign + "." + signature
 	return token, nil
+}
+
+func (j JWT) ValidateToken(token string, login string) bool {
+	splitToken := strings.Split(token, ".")
+	if len(splitToken) != 3 {
+		return false
+	}
+
+	// header
+	var headerBytes = make([]byte, base64.RawURLEncoding.DecodedLen(len(splitToken[0])))
+	_, err := base64.RawURLEncoding.Decode(headerBytes, []byte(splitToken[0]))
+	if err != nil {
+		return false
+	}
+	var header = &Header{}
+	err = json.Unmarshal(headerBytes, header)
+	if err != nil {
+		return false
+	}
+
+	// payload
+	var payloadBytes = make([]byte, base64.RawURLEncoding.DecodedLen(len(splitToken[1])))
+	_, err = base64.RawURLEncoding.Decode(payloadBytes, []byte(splitToken[1]))
+	if err != nil {
+		return false
+	}
+	var payload = &Payload{}
+	err = json.Unmarshal(payloadBytes, payload)
+	if err != nil {
+		return false
+	}
+	if payload.Name != login {
+		return false
+	}
+
+	// check signature
+	gToken, err := j.GenerateToken()
+	if err != nil {
+		return false
+	}
+	return gToken == token
 }
