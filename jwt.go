@@ -85,7 +85,7 @@ func (j JWT) GenerateToken(encode bool) (string, error) {
 	return token, nil
 }
 
-func (j JWT) ValidateToken(token string, login string) bool {
+func (j JWT) ValidateToken(token string, login string, encoded bool) bool {
 	splitToken := strings.Split(token, ".")
 	if len(splitToken) != 3 {
 		return false
@@ -119,7 +119,7 @@ func (j JWT) ValidateToken(token string, login string) bool {
 	}
 
 	// check signature
-	gToken, err := j.GenerateToken(false)
+	gToken, err := j.GenerateToken(encoded)
 	if err != nil {
 		return false
 	}

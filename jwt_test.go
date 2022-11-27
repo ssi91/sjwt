@@ -81,7 +81,23 @@ func TestJWT_ValidateToken(t *testing.T) {
 		Name: "John Doe",
 	}
 	jwt := NewJWT(header, payload, "your-256-bit-secret")
-	isValid := jwt.ValidateToken(token, "John Doe")
+	isValid := jwt.ValidateToken(token, "John Doe", false)
+	if !isValid {
+		t.Errorf("Token string is not valid")
+	}
+}
+
+func TestJWT_ValidateToken_encoded(t *testing.T) {
+	token := "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJuYW1lIjoiSm9obiBEb2UifQ.78M_nOAoLTZVDh1PM6tzk3mxIrcuaSKMw5PhwIVuAKU"
+	header := Header{
+		Alg:  "HS256",
+		Type: "JWT",
+	}
+	payload := Payload{
+		Name: "John Doe",
+	}
+	jwt := NewJWT(header, payload, "your-256-bit-secret")
+	isValid := jwt.ValidateToken(token, "John Doe", true)
 	if !isValid {
 		t.Errorf("Token string is not valid")
 	}
