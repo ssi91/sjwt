@@ -57,7 +57,7 @@ func (j JWT) stringifyPayload(encode bool) (string, error) {
 }
 
 func (j JWT) GenerateToken(encode bool) (string, error) {
-	key := []byte(j.secret) // TODO: encode secret according to `encode` parameter
+	key := []byte(j.secret)
 	if encode {
 		encodedKey, err := base64.RawURLEncoding.DecodeString(j.secret)
 		if err != nil {
