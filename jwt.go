@@ -3,7 +3,7 @@ package sjwt
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 )
 
@@ -18,9 +18,17 @@ type Payload struct {
 }
 
 type JWT struct {
-	header    Header
-	payload   Payload
-	signature []byte
+	header  Header
+	payload Payload
+	secret  string
+}
+
+func NewJWT(header Header, payload Payload, secret string) *JWT {
+	return &JWT{
+		header:  header,
+		payload: payload,
+		secret:  secret,
+	}
 }
 
 func (p Payload) stringify(encode bool) (string, error) {
@@ -28,7 +36,6 @@ func (p Payload) stringify(encode bool) (string, error) {
 	if err != nil {
 		// TODO: fall?
 	}
-	// TODO: encode base64 if `encode` == true
 	return string(payload), nil
 }
 
@@ -37,7 +44,6 @@ func (h Header) stringify(encode bool) (string, error) {
 	if err != nil {
 		// TODO: fall?
 	}
-	// TODO: encode base64 if `encode` == true
 	return string(header), nil
 }
 
@@ -49,26 +55,24 @@ func (j JWT) stringifyPayload(encode bool) (string, error) {
 	return j.payload.stringify(encode)
 }
 
-func (j JWT) GenerateToken(login string) (string, error) {
-	key := []byte("string") // TODO: pass a secret here
+func (j JWT) GenerateToken() (string, error) {
+	key := []byte(j.secret) // TODO: encode secret according to `encode` parameter
 	mac := hmac.New(sha256.New, key)
 
-	j.payload.Name = login
-	payloadStr, err := j.stringifyPayload(false) // TODO: encode base64
+	payloadStr, err := j.stringifyPayload(false)
+	payloadStr = base64.RawURLEncoding.EncodeToString([]byte(payloadStr))
 	if err != nil {
 		return "", err
 	}
-	headerStr, err := j.stringifyHeader(false) // TODO: encode base64
+	headerStr, err := j.stringifyHeader(false)
+	headerStr = base64.RawURLEncoding.EncodeToString([]byte(headerStr))
 	if err != nil {
 		return "", err
 	}
 	dataToSign := headerStr + "." + payloadStr
 	mac.Write([]byte(dataToSign))
 
-	signature := hex.EncodeToString(mac.Sum(nil)) // TODO: encode according to `encode` parameter
+	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 	token := dataToSign + "." + signature
 	return token, nil
-}
-
-func main() {
 }

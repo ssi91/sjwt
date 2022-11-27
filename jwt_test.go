@@ -32,3 +32,22 @@ func TestPayload_stringify(t *testing.T) {
 		t.Errorf("Payload string does not match to expected:\nExpected: %s\nActual: %s\n", expectedStr, str)
 	}
 }
+
+func TestJWT_GenerateToken(t *testing.T) {
+	expectedStr := "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJuYW1lIjoiSm9obiBEb2UifQ.2xE9O-ATs4Glk8fmbfu5KTlbvan3CrMEmDperTknU6Q"
+	header := Header{
+		Alg:  "HS256",
+		Type: "JWT",
+	}
+	payload := Payload{
+		Name: "John Doe",
+	}
+	jwt := NewJWT(header, payload, "your-256-bit-secret")
+	token, err := jwt.GenerateToken()
+	if err != nil {
+		t.Errorf("Failed with error: %s", err)
+	}
+	if token != expectedStr {
+		t.Errorf("Token string does not match to expected:\nExpected: %s\nActual: %s\n", expectedStr, token)
+	}
+}
