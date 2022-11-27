@@ -51,3 +51,19 @@ func TestJWT_GenerateToken(t *testing.T) {
 		t.Errorf("Token string does not match to expected:\nExpected: %s\nActual: %s\n", expectedStr, token)
 	}
 }
+
+func TestJWT_ValidateToken(t *testing.T) {
+	token := "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJuYW1lIjoiSm9obiBEb2UifQ.2xE9O-ATs4Glk8fmbfu5KTlbvan3CrMEmDperTknU6Q"
+	header := Header{
+		Alg:  "HS256",
+		Type: "JWT",
+	}
+	payload := Payload{
+		Name: "John Doe",
+	}
+	jwt := NewJWT(header, payload, "your-256-bit-secret")
+	isValid := jwt.ValidateToken(token, "John Doe")
+	if !isValid {
+		t.Errorf("Token string is not valid")
+	}
+}
