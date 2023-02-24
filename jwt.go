@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"strings"
 )
 
@@ -124,4 +125,29 @@ func (j JWT) ValidateToken(token string, login string, encoded bool) bool {
 		return false
 	}
 	return gToken == token
+}
+
+func checkSignature(tokenHP string, _signature string, secret string) bool {
+	mac := hmac.New(sha256.New, []byte(secret))
+	_, err := mac.Write([]byte(tokenHP))
+	if err != nil {
+		return false
+	}
+	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	return signature == _signature
+}
+
+func ValidateToken(token string, secret string) (bool, error) {
+	splitToken := strings.Split(token, ".")
+	if len(splitToken) != 3 {
+		return false, errors.New("wrong authorisation format")
+	}
+
+	isValid := checkSignature(splitToken[0]+splitToken[1], splitToken[2], secret)
+	if !isValid {
+		return false, errors.New("invalid token signature")
+	}
+
+	return true, nil
+
 }
