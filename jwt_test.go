@@ -102,3 +102,12 @@ func TestJWT_ValidateToken_encoded(t *testing.T) {
 		t.Errorf("Token string is not valid")
 	}
 }
+
+func TestValidateToken(t *testing.T) {
+	token := "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJuYW1lIjoiSm9obiBEb2UifQ.2xE9O-ATs4Glk8fmbfu5KTlbvan3CrMEmDperTknU6Q"
+	isValid, err := ValidateToken(token, "your-256-bit-secret")
+
+	if !isValid {
+		t.Errorf(err.Error())
+	}
+}

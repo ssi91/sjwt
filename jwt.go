@@ -137,13 +137,14 @@ func checkSignature(tokenHP string, _signature string, secret string) bool {
 	return signature == _signature
 }
 
+// ValidateToken FIXME: It doesn't consider signature's encoding
 func ValidateToken(token string, secret string) (bool, error) {
 	splitToken := strings.Split(token, ".")
 	if len(splitToken) != 3 {
 		return false, errors.New("wrong authorisation format")
 	}
 
-	isValid := checkSignature(splitToken[0]+splitToken[1], splitToken[2], secret)
+	isValid := checkSignature(splitToken[0]+"."+splitToken[1], splitToken[2], secret)
 	if !isValid {
 		return false, errors.New("invalid token signature")
 	}
