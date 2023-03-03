@@ -33,6 +33,30 @@ func NewJWT(header Header, payload Payload, secret string) *JWT {
 	}
 }
 
+func newHeader(tokenHeader string) (*Header, error) {
+	var headerBytes = make([]byte, base64.RawURLEncoding.DecodedLen(len(tokenHeader)))
+	_, err := base64.RawURLEncoding.Decode(headerBytes, []byte(tokenHeader))
+	if err != nil {
+		return nil, err
+	}
+	var header = &Header{}
+	err = json.Unmarshal(headerBytes, header)
+
+	return header, err
+}
+
+func newPayload(tokenPayload string) (*Payload, error) {
+	var payloadBytes = make([]byte, base64.RawURLEncoding.DecodedLen(len(tokenPayload)))
+	_, err := base64.RawURLEncoding.Decode(payloadBytes, []byte(tokenPayload))
+	if err != nil {
+		return nil, err
+	}
+	var payload = &Payload{}
+	err = json.Unmarshal(payloadBytes, payload)
+
+	return payload, err
+}
+
 func (p Payload) stringify(encode bool) (string, error) {
 	payload, err := json.Marshal(p)
 	if err != nil {
@@ -139,16 +163,41 @@ func checkSignature(tokenHP string, _signature string, secret string) bool {
 
 // ValidateToken FIXME: It doesn't consider signature's encoding
 func ValidateToken(token string, secret string) (bool, error) {
-	splitToken := strings.Split(token, ".")
-	if len(splitToken) != 3 {
-		return false, errors.New("wrong authorisation format")
+	var splitToken []string
+	isValid, err := validateToken(&splitToken, token, secret, false)
+	return isValid, err
+}
+
+func validateToken(splitToken *[]string, token string, secret string, encoded bool) (bool, error) {
+	*splitToken = strings.Split(token, ".")
+	if len(*splitToken) != 3 {
+		return false, errors.New("wrong token format")
 	}
 
-	isValid := checkSignature(splitToken[0]+"."+splitToken[1], splitToken[2], secret)
+	isValid := checkSignature((*splitToken)[0]+"."+(*splitToken)[1], (*splitToken)[2], secret)
 	if !isValid {
 		return false, errors.New("invalid token signature")
 	}
 
 	return true, nil
+}
 
+func JWTFromToken(token string, secret string, encoded bool) (*JWT, error) {
+	var splitToken []string
+	isValid, err := validateToken(&splitToken, token, secret, encoded)
+	if !isValid {
+		return nil, err
+	}
+
+	header, err := newHeader(splitToken[0])
+	if err != nil {
+		return nil, err
+	}
+
+	payload, err := newPayload(splitToken[1])
+	if err != nil {
+		return nil, err
+	}
+
+	return NewJWT(*header, *payload, secret), nil
 }
