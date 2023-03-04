@@ -77,6 +77,10 @@ func (j JWT) Header() *Header {
 	return &j.header
 }
 
+func (j JWT) Payload() *Payload {
+	return &j.payload
+}
+
 func (j JWT) stringifyHeader(encode bool) (string, error) {
 	return j.header.stringify(encode)
 }
