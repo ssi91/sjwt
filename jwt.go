@@ -73,6 +73,10 @@ func (h Header) stringify(encode bool) (string, error) {
 	return string(header), nil
 }
 
+func (j JWT) Header() *Header {
+	return &j.header
+}
+
 func (j JWT) stringifyHeader(encode bool) (string, error) {
 	return j.header.stringify(encode)
 }
