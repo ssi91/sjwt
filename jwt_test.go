@@ -1,6 +1,9 @@
 package sjwt
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestHeader_stringify(t *testing.T) {
 	header := Header{
@@ -109,5 +112,26 @@ func TestValidateToken(t *testing.T) {
 
 	if !isValid {
 		t.Errorf(err.Error())
+	}
+}
+
+func TestJWTFromToken(t *testing.T) {
+	token := "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJuYW1lIjoiSm9obiBEb2UifQ.2xE9O-ATs4Glk8fmbfu5KTlbvan3CrMEmDperTknU6Q"
+	header := Header{
+		Alg:  "HS256",
+		Type: "JWT",
+	}
+	payload := Payload{
+		Name: "John Doe",
+	}
+	secret := "your-256-bit-secret"
+	expectedJWT := NewJWT(header, payload, secret)
+	jwt, err := JWTFromToken(token, secret, false)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if !reflect.DeepEqual(expectedJWT, jwt) {
+		t.Errorf("JWT's are not equal:\n%s\n%s", expectedJWT, jwt)
 	}
 }
